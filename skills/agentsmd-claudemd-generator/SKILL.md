@@ -49,7 +49,13 @@ Always prefer pointing users to these docs rather than reciting their contents:
    - Find the project's build, test, lint, format, and deploy commands — whatever tool the project actually uses.
    - Note environment requirements: runtimes, package managers, env vars, `.env.example` files.
 
-5. **Resolve ambiguities**
+5. **Identify existing documentation**
+   - Check if project docs already cover code style, conventions, patterns, or best practices (e.g., `docs/best_practices.md`, `CONTRIBUTING.md`, style guides).
+   - These docs are the **source of truth** — AGENTS.md should reference them, not duplicate their content.
+
+6. **Resolve ambiguities**
+   - Ask the developer to confirm the tech stack — don't assume completeness from code alone (CI tools, infrastructure, and platform-specific details are easy to miss).
+   - Ask which commands are the **main ones** developers use daily — don't just list everything from package.json/Makefile.
    - Ask the developer when conventions or ownership are unclear. Do not guess.
 
 > **Outcome:** Structured notes covering layout, tooling, commands, testing, conventions, and open questions.
@@ -93,18 +99,18 @@ Before every commit, verify code quality on pending files:
 
 Never commit code that fails these checks.
 
-## Code Style
+## Code Style & Common Patterns
 
+<!-- If the project already has docs covering style/conventions/patterns (e.g., best_practices.md, CONTRIBUTING.md),
+     reference them here instead of duplicating. Only inline rules that have NO existing doc. -->
+
+See [Best Practices](docs/best_practices.md) for code style conventions, common patterns, and preferred libraries.
+
+<!-- Example of inlining ONLY when no existing doc covers it:
 - Specific, actionable rules (not vague "follow best practices")
-- Export preferences (named vs default)
-- Typing strictness expectations
-
-## Common Patterns
-
-<!-- Map tools to purposes: "use X for Y" -->
 - **UI**: Use <design system> for UI components
 - **Data**: Use <data layer> for data fetching
-- **Testing**: Use <test lib>, avoid <anti-pattern>
+-->
 
 ## File Organization
 
@@ -135,9 +141,11 @@ src/
 
 ### Writing guidelines
 
+- **Never duplicate existing docs** — if the project already documents code style, patterns, or conventions (in files like `best_practices.md`, `CONTRIBUTING.md`, style guides), reference them with a one-liner instead of restating the content. AGENTS.md should complement existing docs, not copy them.
+- **Ask the developer to confirm** the tech stack and which commands are the main ones. Don't assume completeness from code inspection alone — CI tools, infrastructure, and daily-use commands are easy to miss or over-include.
 - Keep it **actionable** — agents should follow instructions verbatim, not interpret vague guidance.
-- **"Use X for Y"** — map tools to purposes so agents pick the right library.
-- **Exact commands** — include the actual shell commands, not descriptions of what to do.
+- **"Use X for Y"** — map tools to purposes so agents pick the right library (only when not already covered by existing docs).
+- **Exact commands** — include the actual shell commands, not descriptions of what to do. Only list the commands developers use most — don't dump the full scripts section from package.json.
 - **Pre-commit checks** — always include a verification block with commands to run before committing.
 - **Reference deeper docs** — use `@imports` to link to detailed docs instead of duplicating content.
 - **Annotate the file tree** — don't dump raw `tree` output; curate it with inline descriptions.
