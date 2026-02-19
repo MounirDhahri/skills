@@ -51,7 +51,9 @@ Always prefer pointing users to these docs rather than reciting their contents:
 
 5. **Identify existing documentation**
    - Check if project docs already cover code style, conventions, patterns, or best practices (e.g., `docs/best_practices.md`, `CONTRIBUTING.md`, style guides).
-   - These docs are the **source of truth** — AGENTS.md should reference them, not duplicate their content.
+   - These docs are the **source of truth** — AGENTS.md should reference them via `@import`, not duplicate their content.
+   - For core docs that apply to nearly every code change (style guides, conventions, patterns): use `@import` so they're always loaded into context.
+   - For docs only relevant occasionally (deployment, setup): use plain markdown links.
 
 6. **Resolve ambiguities**
    - Ask the developer to confirm the tech stack — don't assume completeness from code alone (CI tools, infrastructure, and platform-specific details are easy to miss).
@@ -102,11 +104,13 @@ Never commit code that fails these checks.
 ## Code Style & Common Patterns
 
 <!-- If the project already has docs covering style/conventions/patterns (e.g., best_practices.md, CONTRIBUTING.md),
-     reference them here instead of duplicating. Only inline rules that have NO existing doc. -->
+     use @import so they're always in context. Only inline rules that have NO existing doc. -->
 
-See [Best Practices](docs/best_practices.md) for code style conventions, common patterns, and preferred libraries.
+@docs/best_practices.md
 
-<!-- Example of inlining ONLY when no existing doc covers it:
+<!-- Use @import for docs that agents should ALWAYS have in context (conventions, patterns, style rules).
+     Use a plain markdown link [Topic](path) for docs that are only needed occasionally.
+     Example of inlining ONLY when no existing doc covers it:
 - Specific, actionable rules (not vague "follow best practices")
 - **UI**: Use <design system> for UI components
 - **Data**: Use <data layer> for data fetching
@@ -141,7 +145,7 @@ src/
 
 ### Writing guidelines
 
-- **Never duplicate existing docs** — if the project already documents code style, patterns, or conventions (in files like `best_practices.md`, `CONTRIBUTING.md`, style guides), reference them with a one-liner instead of restating the content. AGENTS.md should complement existing docs, not copy them.
+- **Never duplicate existing docs** — if the project already documents code style, patterns, or conventions (in files like `best_practices.md`, `CONTRIBUTING.md`, style guides), use `@import` to pull them into context instead of restating the content. Use `@import` for docs agents should **always** have (conventions, patterns, style rules). Use plain markdown links for docs only needed occasionally. AGENTS.md should complement existing docs, not copy them.
 - **Ask the developer to confirm** the tech stack and which commands are the main ones. Don't assume completeness from code inspection alone — CI tools, infrastructure, and daily-use commands are easy to miss or over-include.
 - Keep it **actionable** — agents should follow instructions verbatim, not interpret vague guidance.
 - **"Use X for Y"** — map tools to purposes so agents pick the right library (only when not already covered by existing docs).
