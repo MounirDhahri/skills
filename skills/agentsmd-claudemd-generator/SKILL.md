@@ -54,6 +54,7 @@ Always prefer pointing users to these docs rather than reciting their contents:
    - These docs are the **source of truth** — AGENTS.md should reference them via `@import`, not duplicate their content.
    - For core docs that apply to nearly every code change (style guides, conventions, patterns): use `@import` so they're always loaded into context.
    - For docs only relevant occasionally (deployment, setup): use plain markdown links.
+   - **Watch for size**: before recommending `@import`, check the file size. Files over ~300 lines (~1,500 tokens) are worth flagging to the developer — warn them that large `@import`s eat into the context window on every conversation. Suggest they either import only the most critical sections, or keep it as a plain link for on-demand reading.
 
 6. **Resolve ambiguities**
    - Ask the developer to confirm the tech stack — don't assume completeness from code alone (CI tools, infrastructure, and platform-specific details are easy to miss).
@@ -146,6 +147,7 @@ src/
 ### Writing guidelines
 
 - **Never duplicate existing docs** — if the project already documents code style, patterns, or conventions (in files like `best_practices.md`, `CONTRIBUTING.md`, style guides), use `@import` to pull them into context instead of restating the content. Use `@import` for docs agents should **always** have (conventions, patterns, style rules). Use plain markdown links for docs only needed occasionally. AGENTS.md should complement existing docs, not copy them.
+- **Warn about large imports** — before adding an `@import`, check the file size. If a doc is over ~300 lines, warn the developer that it will consume significant context window space on every conversation and ask whether they want to import it fully, import only key sections, or keep it as a plain link.
 - **Ask the developer to confirm** the tech stack and which commands are the main ones. Don't assume completeness from code inspection alone — CI tools, infrastructure, and daily-use commands are easy to miss or over-include.
 - Keep it **actionable** — agents should follow instructions verbatim, not interpret vague guidance.
 - **"Use X for Y"** — map tools to purposes so agents pick the right library (only when not already covered by existing docs).
