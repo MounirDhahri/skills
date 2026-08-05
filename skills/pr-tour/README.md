@@ -10,6 +10,8 @@ Unlike GitHub's own comment-to-comment review flow, the output is a single
 HTML file with zero network dependencies: open it straight from disk, or
 share it as one attachment.
 
+![PR Tour screenshot](assets/screenshot.png)
+
 ## Requirements
 
 - [Claude Code](https://code.claude.com) — this is a Claude Code skill.
