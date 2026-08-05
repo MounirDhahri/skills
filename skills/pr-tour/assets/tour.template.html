@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<title>__TITLE__ — PR Tour</title>
+<style>
+/*__DIFF2HTML_CSS__*/
+</style>
+<style>
+/*__HLJS_CSS__*/
+</style>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0d1117; color: #e6edf3; }
+  .layout { display: flex; height: 100vh; }
+  .sidebar { width: 260px; overflow-y: auto; border-right: 1px solid #30363d; background: #161b22; flex-shrink: 0; }
+  .sidebar h1 { font-size: 14px; padding: 16px; margin: 0; border-bottom: 1px solid #30363d; }
+  .sidebar h1 a { color: #58a6ff; text-decoration: none; }
+  .sidebar ol { list-style: none; margin: 0; padding: 8px; }
+  .sidebar li { padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+  .sidebar li:hover { background: #21262d; }
+  .sidebar li.active { background: rgba(31, 111, 235, 0.2); color: #58a6ff; font-weight: 600; }
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .prose-card { padding: 16px 20px; border-bottom: 1px solid #30363d; }
+  .prose-card h2 { margin: 0 0 8px; font-size: 16px; }
+  .prose-card p { margin: 0; color: #c9d1d9; line-height: 1.5; white-space: pre-wrap; }
+  .toolbar { display: flex; gap: 8px; padding: 8px 20px; border-bottom: 1px solid #30363d; }
+  .toolbar button { background: #21262d; border: 1px solid #30363d; color: #e6edf3; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+  .toolbar button.active { background: #1f6feb; border-color: #1f6feb; }
+  .diff-container { flex: 1; overflow: auto; padding: 12px 20px; }
+  .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-top: 1px solid #30363d; background: #161b22; }
+  .nav-bar button { background: #21262d; border: 1px solid #30363d; color: #e6edf3; padding: 6px 14px; border-radius: 6px; cursor: pointer; }
+  .nav-bar button:disabled { opacity: 0.4; cursor: default; }
+  .nav-bar .progress { font-size: 13px; color: #8b949e; }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <nav class="sidebar">
+      <h1><a href="__PR_URL__" target="_blank" rel="noopener">__TITLE__</a></h1>
+      <ol id="snapshot-list"></ol>
+    </nav>
+    <div class="main">
+      <div class="prose-card">
+        <h2 id="snapshot-title"></h2>
+        <p id="snapshot-prose"></p>
+      </div>
+      <div class="toolbar">
+        <button id="view-line" class="active">Unified</button>
+        <button id="view-side">Split</button>
+      </div>
+      <div class="diff-container" id="diff-container"></div>
+      <div class="nav-bar">
+        <button id="prev-btn">&larr; Prev</button>
+        <span class="progress" id="progress"></span>
+        <button id="next-btn">Next &rarr;</button>
+      </div>
+    </div>
+  </div>
+  <script>
+/*__HLJS_JS__*/
+  </script>
+  <script>
+/*__DIFF2HTML_JS__*/
+  </script>
+  <script>
+/*__TOUR_DATA__*/
+  </script>
+  <script>
+/*__APP_JS__*/
+  </script>
+</body>
+</html>
