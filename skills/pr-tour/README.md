@@ -21,6 +21,15 @@ See `SKILL.md` for the full workflow and `DESIGN.md` for the design
 rationale (including why this differs from the `guided-pr` and Codiff
 approaches already available).
 
+## Running the tests
+
+```bash
+node --test scripts/lib/*.test.mjs
+```
+
+(`node --test scripts/lib/` fails — Node tries to resolve the directory
+itself as a CJS module — so glob the `.test.mjs` files explicitly.)
+
 ## Scope (v1)
 
 - GitHub PR input only — no local git ref/branch-only input.

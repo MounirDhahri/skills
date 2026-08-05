@@ -23,6 +23,10 @@ function escapeForInlineScript(json) {
 }
 
 export function renderTour(tourData) {
+  if (!Array.isArray(tourData?.snapshots) || tourData.snapshots.length === 0) {
+    throw new Error('tour data must contain at least one snapshot');
+  }
+
   const template = readAsset('tour.template.html');
 
   const snapshots = tourData.snapshots.map((s) => ({
@@ -41,15 +45,24 @@ export function renderTour(tourData) {
   // "$&", "$`", "$'" etc., which String.replace() treats as special
   // replacement patterns when given as a plain string, silently corrupting
   // the output. A replacer function disables that interpretation.
+  //
+  // NOTE: the __TITLE__/__PR_URL__ global replaces MUST run before the
+  // asset/tour-data inlining steps below. Those later steps inline
+  // arbitrary diff text (via dataJson) and vendored JS/CSS into the
+  // document. If a PR's own diff happens to contain the literal substring
+  // "__TITLE__" or "__PR_URL__" (e.g. a PR touching this skill's template),
+  // running the global replace AFTER inlining would silently corrupt that
+  // diff text. Replacing the placeholders first means they only ever match
+  // the literal placeholder markers in the template itself.
   return template
+    .replace(/__TITLE__/g, () => escapeHtml(tourData.title))
+    .replace(/__PR_URL__/g, () => escapeHtml(tourData.prUrl))
     .replace('/*__DIFF2HTML_CSS__*/', () => readAsset('diff2html.min.css'))
     .replace('/*__HLJS_CSS__*/', () => readAsset('github-dark.min.css'))
     .replace('/*__DIFF2HTML_JS__*/', () => readAsset('diff2html-ui-slim.min.js'))
     .replace('/*__HLJS_JS__*/', () => readAsset('highlight.min.js'))
     .replace('/*__APP_JS__*/', () => readAsset('app.js'))
-    .replace('/*__TOUR_DATA__*/', () => `window.__TOUR_DATA__ = ${dataJson};`)
-    .replace(/__TITLE__/g, () => escapeHtml(tourData.title))
-    .replace(/__PR_URL__/g, () => escapeHtml(tourData.prUrl));
+    .replace('/*__TOUR_DATA__*/', () => `window.__TOUR_DATA__ = ${dataJson};`);
 }
 
 function parseArgs(argv) {

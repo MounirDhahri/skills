@@ -31,17 +31,28 @@ with no `<ref>`).
 
 ### 2. Fetch and parse the diff
 
+This skill is invoked from whatever project the PR under review lives in —
+its own scripts do **not** live relative to that project's `cwd`. Before
+running anything below, find this skill's own directory: it is the
+directory that contains this `SKILL.md` file (typically something like
+`~/.claude/skills/pr-tour`, but don't hard-code that — resolve it from
+wherever this file actually is). Call that `$SKILL_DIR` in the commands
+below (substitute the real absolute path — don't leave the literal string
+`$SKILL_DIR` in the command you run).
+
 ```bash
-gh pr diff <ref> > /tmp/pr-tour-<id>.diff
+gh pr diff <ref> > "$TMPDIR/pr-tour-<id>.diff"
 ```
 
-Parse it into structured per-file/per-hunk records with the bundled parser:
+Parse it into structured per-file/per-hunk records with the bundled parser,
+using `$SKILL_DIR`'s absolute path (not a path relative to the current
+project's `cwd`):
 
 ```bash
 node --input-type=module -e "
-import { parseUnifiedDiff } from '$(pwd)/skills/pr-tour/scripts/lib/parse-diff.mjs';
+import { parseUnifiedDiff } from '$SKILL_DIR/scripts/lib/parse-diff.mjs';
 import { readFileSync } from 'node:fs';
-const diff = readFileSync('/tmp/pr-tour-<id>.diff', 'utf8');
+const diff = readFileSync('$TMPDIR/pr-tour-<id>.diff', 'utf8');
 console.log(JSON.stringify(parseUnifiedDiff(diff), null, 2));
 "
 ```
@@ -57,7 +68,10 @@ ordered list of snapshots. Group by review idea, the same judgment used by
 Codiff's stop-grouping: don't make one snapshot per file, don't make one
 snapshot per hunk for repeated mechanical changes, order by review leverage
 not file path. Every hunk from every file must land in exactly one snapshot
-— there is no "leave it out" bucket.
+— there is no "leave it out" bucket. This includes files with zero hunks
+(pure renames, binary files, mode-only changes): they still need a
+snapshot slot, even with empty `diffText` — see the coverage rule under
+Rules below.
 
 ### 4. Show the outline and get approval — hard checkpoint
 
@@ -105,8 +119,14 @@ snapshot and write the prose around them.
 
 ### 6. Render
 
+Use the same `$SKILL_DIR` absolute path resolved in step 2, and write the
+output somewhere that is guaranteed to be writable and not accidentally
+committed to whatever project's repo you're touring a PR from — `$TMPDIR`
+is the default; use a path the user explicitly asked for instead if they
+gave one:
+
 ```bash
-node skills/pr-tour/scripts/render-tour.mjs --data $TMPDIR/pr-tour-<id>.json --out .pr-tour/<slug>.html
+node "$SKILL_DIR/scripts/render-tour.mjs" --data "$TMPDIR/pr-tour-<id>.json" --out "$TMPDIR/pr-tour-<slug>.html"
 ```
 
 Pick `<slug>` as a short kebab-case name from the PR title.
@@ -119,9 +139,18 @@ explicitly out of scope for this skill.
 ## Rules
 
 - Never render before the user has approved the snapshot outline (step 4).
-- Every hunk in the diff must appear in exactly one snapshot — verify the
-  count of hunks in your authored JSON matches the count the parser reported
-  in step 2 before writing the file.
+- Every **file** in the diff must be accounted for somewhere in the tour,
+  not just every hunk. Most files have one or more hunks and are covered by
+  checking that the count of hunks in your authored JSON matches the count
+  the parser reported in step 2 — but a pure rename, a binary file, or a
+  mode-only change can have `hunks: []` in the parser output, and a
+  hunk-count check alone will not catch a file like that going missing.
+  Before writing the file, walk the parser's output list and confirm every
+  `path` appears in at least one snapshot's `hunks`. For a file with zero
+  hunks, still add one entry for it to some snapshot with `diffText: ""`
+  and `diffHeader` set to that file's `header` from the parser output —
+  diff2html will still render the header/rename notice with no hunk body,
+  so the file shows up in the tour instead of silently vanishing.
 - Copy `diffHeader`/`diffText` verbatim from the parser output. Never
   hand-write or edit diff content — only group and describe it.
 - Local git refs without an associated PR are out of scope for v1 — if the
