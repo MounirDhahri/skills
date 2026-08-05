@@ -242,12 +242,16 @@
     render();
   });
 
-  themeToggleBtn.addEventListener('click', function () {
-    state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  function applyTheme() {
     document.documentElement.dataset.theme = state.theme;
     hljsThemeDarkEl.disabled = state.theme !== 'dark';
     hljsThemeLightEl.disabled = state.theme !== 'light';
     themeToggleBtn.textContent = state.theme === 'dark' ? '🌙' : '☀️';
+  }
+
+  themeToggleBtn.addEventListener('click', function () {
+    state.theme = state.theme === 'dark' ? 'light' : 'dark';
+    applyTheme();
     render();
   });
 
@@ -258,6 +262,7 @@
     if (e.key === 'ArrowRight') go(1);
   });
 
+  applyTheme();
   buildPhaseBar();
   buildSidebar();
   buildSidebarFooter();
