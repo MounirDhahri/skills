@@ -61,15 +61,6 @@ rationale (including why this differs from the `guided-pr` and Codiff
 approaches already available, and why chapter grouping came back in v2
 after v1 deliberately left it out).
 
-## Running the tests
-
-```bash
-node --test scripts/lib/*.test.mjs
-```
-
-(`node --test scripts/lib/` fails — Node tries to resolve the directory
-itself as a CJS module — so glob the `.test.mjs` files explicitly.)
-
 ## Scope
 
 - GitHub PR input only — no local git ref/branch-only input.
