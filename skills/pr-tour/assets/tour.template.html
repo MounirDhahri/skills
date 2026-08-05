@@ -12,7 +12,8 @@
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0d1117; color: #e6edf3; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0d1117; color: #e6edf3; }
   .layout { display: flex; flex-direction: column; height: 100vh; }
   .phase-bar { display: flex; align-items: center; justify-content: flex-start; padding: 14px 20px; border-bottom: 1px solid #30363d; background: #161b22; overflow-x: auto; }
   .phase-bar.hidden { display: none; }
@@ -24,7 +25,7 @@
   .phase-step.current .label { color: #e6edf3; font-weight: 600; }
   .phase-line { width: 32px; height: 1px; background: #30363d; flex-shrink: 0; margin: 0 4px; }
   .body-row { flex: 1; display: flex; min-height: 0; }
-  .sidebar { width: 280px; overflow-y: auto; border-right: 1px solid #30363d; background: #161b22; flex-shrink: 0; display: flex; flex-direction: column; }
+  .sidebar { width: 280px; min-height: 0; border-right: 1px solid #30363d; background: #161b22; flex-shrink: 0; display: flex; flex-direction: column; }
   .sidebar-header { padding: 14px 16px; border-bottom: 1px solid #30363d; display: flex; align-items: center; gap: 8px; }
   .sidebar-header .mark { font-size: 18px; line-height: 1; }
   .sidebar-header a { color: #58a6ff; text-decoration: none; font-size: 13px; font-weight: 600; }
@@ -40,7 +41,7 @@
   .stat-added { color: #3fb950; }
   .stat-deleted { color: #f85149; }
   .sidebar-footer { padding: 10px 16px; border-top: 1px solid #30363d; font-size: 12px; color: #8b949e; }
-  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
   .prose-card { padding: 16px 20px; border-bottom: 1px solid #30363d; }
   .prose-card h2 { margin: 0 0 8px; font-size: 16px; }
   .prose-card p { margin: 0; color: #c9d1d9; line-height: 1.5; white-space: pre-wrap; }
