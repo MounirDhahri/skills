@@ -10,6 +10,37 @@ Unlike GitHub's own comment-to-comment review flow, the output is a single
 HTML file with zero network dependencies: open it straight from disk, or
 share it as one attachment.
 
+## Requirements
+
+- [Claude Code](https://code.claude.com) — this is a Claude Code skill.
+- [`gh`](https://cli.github.com), authenticated (`gh auth login`) — used to fetch the PR diff.
+- Node.js — used to run `scripts/render-tour.mjs`.
+
+## Installation
+
+Claude Code loads skills from a `SKILL.md` file in a directory it scans:
+personal skills under `~/.claude/skills/`, project skills under
+`<project>/.claude/skills/`.
+
+Copy or symlink this `pr-tour` directory into one of those locations. To
+install for every project (and keep it updated by pulling this repo):
+
+```bash
+git clone https://github.com/MounirDhahri/skills.git ~/personal/skills
+mkdir -p ~/.claude/skills
+ln -s ~/personal/skills/skills/pr-tour ~/.claude/skills/pr-tour
+```
+
+Or copy it into a single project instead:
+
+```bash
+mkdir -p /path/to/project/.claude/skills
+cp -r skills/pr-tour /path/to/project/.claude/skills/pr-tour
+```
+
+Restart Claude Code (or start a new session) so it picks up the new skill,
+then invoke it by referencing a PR — e.g. "turn PR #123 into a tour".
+
 ## How it works
 
 1. Fetches the PR's diff with `gh pr diff`.
