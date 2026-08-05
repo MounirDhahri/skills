@@ -1,8 +1,19 @@
 (function () {
   var data = window.__TOUR_DATA__;
-  var state = { index: 0, format: 'line-by-line' };
+  var state = { index: 0, format: 'line-by-line', viewed: {} };
 
-  var listEl = document.getElementById('snapshot-list');
+  var flat = [];
+  data.chapters.forEach(function (chapter, chapterIndex) {
+    chapter.snapshots.forEach(function (snapshot) {
+      flat.push({ chapterIndex: chapterIndex, snapshot: snapshot });
+    });
+  });
+
+  var multiChapter = data.chapters.length > 1;
+
+  var phaseBarEl = document.getElementById('phase-bar');
+  var sidebarBodyEl = document.getElementById('sidebar-body');
+  var sidebarFooterEl = document.getElementById('sidebar-footer');
   var titleEl = document.getElementById('snapshot-title');
   var proseEl = document.getElementById('snapshot-prose');
   var diffEl = document.getElementById('diff-container');
@@ -12,31 +23,146 @@
   var lineBtn = document.getElementById('view-line');
   var sideBtn = document.getElementById('view-side');
 
-  data.snapshots.forEach(function (snapshot, i) {
-    var li = document.createElement('li');
-    li.textContent = (i + 1) + '. ' + snapshot.title;
-    li.addEventListener('click', function () {
-      state.index = i;
-      render();
+  function formatStats(stats) {
+    var parts = [];
+    if (stats.added) parts.push('<span class="stat-added">+' + stats.added + '</span>');
+    if (stats.deleted) parts.push('<span class="stat-deleted">-' + stats.deleted + '</span>');
+    return parts.join(' ');
+  }
+
+  function buildPhaseBar() {
+    if (!multiChapter) {
+      phaseBarEl.classList.add('hidden');
+      return;
+    }
+    phaseBarEl.innerHTML = '';
+    data.chapters.forEach(function (chapter, i) {
+      if (i > 0) {
+        var line = document.createElement('div');
+        line.className = 'phase-line';
+        phaseBarEl.appendChild(line);
+      }
+      var step = document.createElement('div');
+      step.className = 'phase-step';
+      step.dataset.chapterIndex = String(i);
+
+      var dot = document.createElement('div');
+      dot.className = 'dot';
+      dot.textContent = chapter.icon || String(i + 1);
+
+      var label = document.createElement('div');
+      label.className = 'label';
+      label.textContent = chapter.title;
+
+      step.appendChild(dot);
+      step.appendChild(label);
+      phaseBarEl.appendChild(step);
     });
-    listEl.appendChild(li);
-  });
+  }
 
-  function render() {
-    var snapshot = data.snapshots[state.index];
-
-    Array.prototype.forEach.call(listEl.children, function (li, i) {
-      li.classList.toggle('active', i === state.index);
+  function updatePhaseBar(currentChapterIndex) {
+    if (!multiChapter) return;
+    Array.prototype.forEach.call(phaseBarEl.querySelectorAll('.phase-step'), function (step) {
+      var i = Number(step.dataset.chapterIndex);
+      step.classList.toggle('done', i < currentChapterIndex);
+      step.classList.toggle('current', i === currentChapterIndex);
+      var dot = step.querySelector('.dot');
+      dot.textContent = i < currentChapterIndex ? '✓' : (data.chapters[i].icon || String(i + 1));
     });
+  }
 
-    titleEl.textContent = snapshot.title;
-    proseEl.textContent = snapshot.prose;
-    progressEl.textContent = (state.index + 1) + ' / ' + data.snapshots.length;
-    prevBtn.disabled = state.index === 0;
-    nextBtn.disabled = state.index === data.snapshots.length - 1;
+  function buildSidebar() {
+    sidebarBodyEl.innerHTML = '';
+    var flatIndex = 0;
+    data.chapters.forEach(function (chapter) {
+      var group = document.createElement('div');
+      group.className = 'chapter-group';
 
-    diffEl.innerHTML = '';
-    var ui = new window.Diff2HtmlUI(diffEl, snapshot.diffText, {
+      if (multiChapter) {
+        var heading = document.createElement('div');
+        heading.className = 'chapter-heading';
+        heading.textContent = (chapter.icon ? chapter.icon + ' ' : '') + chapter.title;
+        group.appendChild(heading);
+      }
+
+      var list = document.createElement('ol');
+      chapter.snapshots.forEach(function (snapshot) {
+        var currentFlatIndex = flatIndex;
+        var li = document.createElement('li');
+        li.dataset.flatIndex = String(currentFlatIndex);
+
+        var titleDiv = document.createElement('div');
+        titleDiv.textContent = (currentFlatIndex + 1) + '. ' + snapshot.title;
+
+        var metaDiv = document.createElement('div');
+        metaDiv.className = 'meta';
+        metaDiv.innerHTML =
+          '<span>' + snapshot.fileCount + ' file' + (snapshot.fileCount === 1 ? '' : 's') + '</span>' +
+          '<span>' + formatStats(snapshot.stats) + '</span>';
+
+        li.appendChild(titleDiv);
+        li.appendChild(metaDiv);
+        li.addEventListener('click', function () {
+          state.index = currentFlatIndex;
+          render();
+        });
+        list.appendChild(li);
+        flatIndex += 1;
+      });
+
+      group.appendChild(list);
+      sidebarBodyEl.appendChild(group);
+    });
+  }
+
+  function buildSidebarFooter() {
+    sidebarFooterEl.innerHTML = 'Total: ' + formatStats(data.total);
+  }
+
+  function renderFileCard(file, snapshotKey) {
+    var card = document.createElement('div');
+    card.className = 'file-card';
+    var fileKey = snapshotKey + '::' + file.path;
+    if (state.viewed[fileKey]) card.classList.add('viewed');
+
+    var header = document.createElement('div');
+    header.className = 'file-card-header';
+
+    var path = document.createElement('span');
+    path.className = 'path';
+    path.textContent = file.path;
+
+    var badge = document.createElement('span');
+    badge.className = 'status-badge ' + file.status;
+    badge.textContent = file.status;
+
+    var stats = document.createElement('span');
+    stats.className = 'file-stats';
+    stats.innerHTML = formatStats(file.stats);
+
+    var label = document.createElement('label');
+    var checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = Boolean(state.viewed[fileKey]);
+    checkbox.addEventListener('change', function () {
+      state.viewed[fileKey] = checkbox.checked;
+      card.classList.toggle('viewed', checkbox.checked);
+    });
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode('Viewed'));
+
+    header.appendChild(path);
+    header.appendChild(badge);
+    header.appendChild(stats);
+    header.appendChild(label);
+
+    var body = document.createElement('div');
+    body.className = 'file-card-body';
+
+    card.appendChild(header);
+    card.appendChild(body);
+
+    var ui = new window.Diff2HtmlUI(body, file.diffText, {
       drawFileList: false,
       matching: 'lines',
       outputFormat: state.format,
@@ -45,11 +171,36 @@
     });
     ui.draw();
     ui.highlightCode();
+
+    return card;
+  }
+
+  function render() {
+    var current = flat[state.index];
+    var snapshot = current.snapshot;
+
+    Array.prototype.forEach.call(sidebarBodyEl.querySelectorAll('li'), function (li) {
+      li.classList.toggle('active', Number(li.dataset.flatIndex) === state.index);
+    });
+
+    updatePhaseBar(current.chapterIndex);
+
+    titleEl.textContent = snapshot.title;
+    proseEl.textContent = snapshot.prose;
+    progressEl.textContent = (state.index + 1) + ' / ' + flat.length;
+    prevBtn.disabled = state.index === 0;
+    nextBtn.disabled = state.index === flat.length - 1;
+
+    diffEl.innerHTML = '';
+    var snapshotKey = current.chapterIndex + '::' + snapshot.id;
+    snapshot.files.forEach(function (file) {
+      diffEl.appendChild(renderFileCard(file, snapshotKey));
+    });
   }
 
   function go(delta) {
     var next = state.index + delta;
-    if (next < 0 || next >= data.snapshots.length) return;
+    if (next < 0 || next >= flat.length) return;
     state.index = next;
     render();
   }
@@ -75,5 +226,8 @@
     if (e.key === 'ArrowRight') go(1);
   });
 
+  buildPhaseBar();
+  buildSidebar();
+  buildSidebarFooter();
   render();
 })();
