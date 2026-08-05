@@ -1,0 +1,28 @@
+diff --git a/src/foo.js b/src/foo.js
+index abc123..def456 100644
+--- a/src/foo.js
++++ b/src/foo.js
+@@ -1,3 +1,4 @@
+ const a = 1;
++const b = 2;
+ module.exports = { a };
+
+@@ -10,2 +11,3 @@
+ function foo() {}
++function bar() {}
+diff --git a/src/new.js b/src/new.js
+new file mode 100644
+index 0000000..111222
+--- /dev/null
++++ b/src/new.js
+@@ -0,0 +1,2 @@
++export const x = 1;
++export const y = 2;
+diff --git a/src/old.js b/src/old.js
+deleted file mode 100644
+index 333444..0000000
+--- a/src/old.js
++++ /dev/null
+@@ -1,2 +0,0 @@
+-export const z = 1;
+-export const w = 2;
