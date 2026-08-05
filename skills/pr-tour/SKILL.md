@@ -61,27 +61,44 @@ Read the result. Each entry is `{ path, oldPath, status, header, hunks: string[]
 — `header` is that file's diff preamble, `hunks` are the individual `@@ ... @@`
 blocks in file order.
 
-### 3. Group hunks into snapshots
+### 3. Group hunks into chapters, then snapshots within each chapter
 
 Read the diff (and the PR body/description for intent) and propose an
-ordered list of snapshots. Group by review idea, the same judgment used by
-Codiff's stop-grouping: don't make one snapshot per file, don't make one
-snapshot per hunk for repeated mechanical changes, order by review leverage
-not file path. Every hunk from every file must land in exactly one snapshot
-— there is no "leave it out" bucket. This includes files with zero hunks
-(pure renames, binary files, mode-only changes): they still need a
-snapshot slot, even with empty `diffText` — see the coverage rule under
-Rules below.
+ordered list of **chapters** — broad themes (e.g. "Core plumbing", "Type
+tightening", "Docs & tooling") — each containing an ordered list of
+**snapshots** grouped by review idea, the same judgment used by Codiff's
+stop-grouping: don't make one snapshot per file, don't make one snapshot
+per hunk for repeated mechanical changes, order by review leverage not
+file path. Every hunk from every file must land in exactly one snapshot,
+in exactly one chapter — there is no "leave it out" bucket. This includes
+files with zero hunks (pure renames, binary files, mode-only changes):
+they still need a snapshot slot, even with empty `diffText` — see the
+coverage rule under Rules below.
+
+If the diff doesn't split into distinct themes (a small, focused PR),
+propose a single chapter containing every snapshot. The rendered tour
+detects this and skips the chapter/phase-bar chrome entirely, showing a
+flat list — there's no need to invent artificial themes for a small PR.
+
+Optionally give each chapter a single emoji `icon` that fits its theme
+(e.g. 🔧 for core plumbing, 📄 for docs). Omit it if nothing fits — the
+renderer falls back to a plain number.
 
 ### 4. Show the outline and get approval — hard checkpoint
 
-Present the proposed snapshots as plain text, one line each:
+Present the proposed chapters and snapshots as plain text:
 
 ```
-1. <title> — <one-line summary> — files: <path>, <path>
-2. <title> — <one-line summary> — files: <path>
+Chapter 1: <chapter title>
+  1. <snapshot title> — <one-line summary> — files: <path>, <path>
+  2. <snapshot title> — <one-line summary> — files: <path>
+Chapter 2: <chapter title>
+  3. <snapshot title> — <one-line summary> — files: <path>
 ...
 ```
+
+(For a single-chapter tour, just the numbered snapshot list — no chapter
+headers needed.)
 
 Iterate with the user until they approve. **Do not render before this is
 approved.**
@@ -95,17 +112,24 @@ Write this exact shape to a temp file outside the repo (e.g.
 {
   "title": "PR title",
   "prUrl": "https://github.com/owner/repo/pull/123",
-  "snapshots": [
+  "chapters": [
     {
-      "id": "s1",
-      "title": "short snapshot title",
-      "prose": "2-6 sentences: what changed here and why",
-      "hunks": [
+      "id": "c1",
+      "title": "short chapter/theme title",
+      "icon": "🔧",
+      "snapshots": [
         {
-          "path": "src/file.ts",
-          "status": "modified",
-          "diffHeader": "<that file's header from step 2, verbatim>",
-          "diffText": "<one hunk's text from step 2, verbatim, including its @@ line>"
+          "id": "s1",
+          "title": "short snapshot title",
+          "prose": "2-6 sentences: what changed here and why",
+          "hunks": [
+            {
+              "path": "src/file.ts",
+              "status": "modified",
+              "diffHeader": "<that file's header from step 2, verbatim>",
+              "diffText": "<one hunk's text from step 2, verbatim, including its @@ line>"
+            }
+          ]
         }
       ]
     }
@@ -113,9 +137,13 @@ Write this exact shape to a temp file outside the repo (e.g.
 }
 ```
 
-`diffHeader` and `diffText` must be copied verbatim from the parser output in
-step 2 — do not hand-edit diff content, only choose which hunks go in which
-snapshot and write the prose around them.
+`icon` is optional — omit the key entirely if no emoji fits the chapter's
+theme. `diffHeader` and `diffText` must be copied verbatim from the parser
+output in step 2 — do not hand-edit diff content, only choose which hunks
+go in which snapshot, which snapshots go in which chapter, and write the
+prose around them. File status badges and added/removed line counts are
+computed automatically by the render script from `status` and `diffText`
+— do not compute or include them yourself.
 
 ### 6. Render
 
@@ -138,7 +166,8 @@ explicitly out of scope for this skill.
 
 ## Rules
 
-- Never render before the user has approved the snapshot outline (step 4).
+- Never render before the user has approved the chapter/snapshot outline (step 4).
+- A single-chapter tour is expected and fine for small, focused PRs — don't force artificial themes onto a diff that doesn't have them.
 - Every **file** in the diff must be accounted for somewhere in the tour,
   not just every hunk. Most files have one or more hunks and are covered by
   checking that the count of hunks in your authored JSON matches the count
