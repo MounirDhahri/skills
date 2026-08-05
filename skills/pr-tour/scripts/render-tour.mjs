@@ -1,7 +1,8 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildSnapshotDiffText } from './lib/build-snapshot-diff.mjs';
+import { groupHunksByFile } from './lib/build-snapshot-diff.mjs';
+import { computeLineStats } from './lib/compute-line-stats.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ASSETS_DIR = resolve(__dirname, '../assets');
@@ -22,22 +23,62 @@ function escapeForInlineScript(json) {
   return json.replace(/</g, '\\u003c');
 }
 
+function sumStats(statsList) {
+  return statsList.reduce(
+    (acc, s) => ({ added: acc.added + s.added, deleted: acc.deleted + s.deleted }),
+    { added: 0, deleted: 0 },
+  );
+}
+
+function buildFile(hunkFile) {
+  return {
+    path: hunkFile.path,
+    status: hunkFile.status,
+    diffText: hunkFile.diffText,
+    stats: computeLineStats(hunkFile.diffText),
+  };
+}
+
+function buildSnapshot(snapshot) {
+  const files = groupHunksByFile(snapshot.hunks).map(buildFile);
+  return {
+    id: snapshot.id,
+    title: snapshot.title,
+    prose: snapshot.prose,
+    fileCount: files.length,
+    files,
+    stats: sumStats(files.map((f) => f.stats)),
+  };
+}
+
+function buildChapter(chapter) {
+  const snapshots = chapter.snapshots.map(buildSnapshot);
+  return {
+    id: chapter.id,
+    title: chapter.title,
+    icon: chapter.icon ?? null,
+    snapshots,
+    stats: sumStats(snapshots.map((s) => s.stats)),
+  };
+}
+
 export function renderTour(tourData) {
-  if (!Array.isArray(tourData?.snapshots) || tourData.snapshots.length === 0) {
-    throw new Error('tour data must contain at least one snapshot');
+  if (!Array.isArray(tourData?.chapters) || tourData.chapters.length === 0) {
+    throw new Error('tour data must contain at least one chapter');
+  }
+  for (const chapter of tourData.chapters) {
+    if (!Array.isArray(chapter?.snapshots) || chapter.snapshots.length === 0) {
+      throw new Error(`chapter "${chapter?.id ?? '(unknown)'}" must contain at least one snapshot`);
+    }
   }
 
   const template = readAsset('tour.template.html');
 
-  const snapshots = tourData.snapshots.map((s) => ({
-    id: s.id,
-    title: s.title,
-    prose: s.prose,
-    diffText: buildSnapshotDiffText(s),
-  }));
+  const chapters = tourData.chapters.map(buildChapter);
+  const total = sumStats(chapters.map((c) => c.stats));
 
   const dataJson = escapeForInlineScript(
-    JSON.stringify({ title: tourData.title, prUrl: tourData.prUrl, snapshots }),
+    JSON.stringify({ title: tourData.title, prUrl: tourData.prUrl, chapters, total }),
   );
 
   // NOTE: replacement values are passed via a function (`() => value`), not

@@ -9,6 +9,15 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const tourData = JSON.parse(
   readFileSync(resolve(__dirname, '../fixtures/sample-tour.json'), 'utf8'),
 );
+const singleChapterTourData = JSON.parse(
+  readFileSync(resolve(__dirname, '../fixtures/single-chapter-tour.json'), 'utf8'),
+);
+
+function extractTourData(html) {
+  const match = html.match(/window\.__TOUR_DATA__ = (.*);/);
+  assert.ok(match, 'expected a window.__TOUR_DATA__ assignment in the rendered HTML');
+  return JSON.parse(match[1]);
+}
 
 test('renders a full HTML document with no network dependencies', () => {
   const html = renderTour(tourData);
@@ -32,11 +41,11 @@ test('embeds the tour title and PR url', () => {
   assert.ok(html.includes('https://github.com/artsy/metaphysics/pull/7623'));
 });
 
-test('embeds snapshot data with grouped diff text', () => {
+test('embeds chapters, snapshots, and grouped diff text', () => {
   const html = renderTour(tourData);
   assert.ok(html.includes('Track scroll behavior'));
   assert.ok(html.includes('Settings defaults'));
-  assert.ok(html.includes('diffScrollContainerRef'));
+  assert.ok(html.includes('toggleFileReviewed'));
 });
 
 test('leaves no unresolved placeholder markers', () => {
@@ -48,24 +57,27 @@ test('leaves no unresolved placeholder markers', () => {
 });
 
 test('does not corrupt diff text that happens to contain a placeholder-like literal', () => {
-  // Regression test: the __TITLE__/__PR_URL__ global replaces must run
-  // BEFORE the tour data/assets are inlined, otherwise diff text from the
-  // PR itself (e.g. a PR that edits this skill's own template) could
-  // contain the literal substring "__TITLE__" or "__PR_URL__" and get
-  // silently rewritten by the later global replace.
   const dataWithPlaceholderInDiff = {
-    ...tourData,
-    snapshots: [
+    title: tourData.title,
+    prUrl: tourData.prUrl,
+    chapters: [
       {
-        id: 's1',
-        title: 'Edit the tour template',
-        prose: 'Touches the placeholder markers in the template file itself.',
-        hunks: [
+        id: 'c1',
+        title: 'Template edits',
+        snapshots: [
           {
-            path: 'skills/pr-tour/assets/tour.template.html',
-            status: 'modified',
-            diffHeader: 'diff --git a/tour.template.html b/tour.template.html',
-            diffText: '@@ -1,3 +1,3 @@\n-<title>__TITLE__</title>\n+<title>__TITLE__ (updated)</title>\n See __PR_URL__ for details.',
+            id: 's1',
+            title: 'Edit the tour template',
+            prose: 'Touches the placeholder markers in the template file itself.',
+            hunks: [
+              {
+                path: 'skills/pr-tour/assets/tour.template.html',
+                status: 'modified',
+                diffHeader: 'diff --git a/tour.template.html b/tour.template.html',
+                diffText:
+                  '@@ -1,3 +1,3 @@\n-<title>__TITLE__</title>\n+<title>__TITLE__ (updated)</title>\n See __PR_URL__ for details.',
+              },
+            ],
           },
         ],
       },
@@ -83,35 +95,76 @@ test('does not corrupt diff text that happens to contain a placeholder-like lite
   );
 });
 
-test('renderTour throws a clear error when snapshots is missing', () => {
+test('renderTour throws a clear error when chapters is missing', () => {
   assert.throws(
-    () => renderTour({ title: 'No snapshots key', prUrl: 'https://example.com/pr/1' }),
-    /tour data must contain at least one snapshot/,
+    () => renderTour({ title: 'No chapters key', prUrl: 'https://example.com/pr/1' }),
+    /tour data must contain at least one chapter/,
   );
 });
 
-test('renderTour throws a clear error when snapshots is empty', () => {
+test('renderTour throws a clear error when chapters is empty', () => {
   assert.throws(
-    () => renderTour({ title: 'Empty snapshots', prUrl: 'https://example.com/pr/1', snapshots: [] }),
-    /tour data must contain at least one snapshot/,
+    () => renderTour({ title: 'Empty chapters', prUrl: 'https://example.com/pr/1', chapters: [] }),
+    /tour data must contain at least one chapter/,
+  );
+});
+
+test('renderTour throws a clear error when a chapter has no snapshots', () => {
+  assert.throws(
+    () =>
+      renderTour({
+        title: 'Empty chapter',
+        prUrl: 'https://example.com/pr/1',
+        chapters: [{ id: 'c1', title: 'Empty', snapshots: [] }],
+      }),
+    /chapter "c1" must contain at least one snapshot/,
   );
 });
 
 test('renderTour throws a clear error when called with no arguments', () => {
-  assert.throws(
-    () => renderTour({}),
-    /tour data must contain at least one snapshot/,
-  );
+  assert.throws(() => renderTour({}), /tour data must contain at least one chapter/);
 });
 
 test('preserves a title containing literal $-replacement patterns', () => {
-  // Regression test for the Task 5 fix: String.prototype.replace() treats
-  // "$&", "$`", "$'" specially when the replacement is a plain string.
-  // Titles/URLs containing these literal sequences must survive verbatim.
-  const dataWithDollarTitle = {
-    ...tourData,
-    title: "a$&b$`c",
-  };
+  const dataWithDollarTitle = { ...tourData, title: "a$&b$`c" };
   const html = renderTour(dataWithDollarTitle);
-  assert.ok(html.includes('a$&amp;b$`c'), 'title with literal $-patterns must survive escaped but unmangled');
+  assert.ok(
+    html.includes('a$&amp;b$`c'),
+    'title with literal $-patterns must survive escaped but unmangled',
+  );
+});
+
+test('computes per-file, per-snapshot, per-chapter, and total added/deleted line stats', () => {
+  const html = renderTour(tourData);
+  const embedded = extractTourData(html);
+
+  assert.equal(embedded.chapters.length, 2);
+
+  const firstChapter = embedded.chapters[0];
+  const firstSnapshot = firstChapter.snapshots[0];
+  const firstFile = firstSnapshot.files[0];
+
+  assert.deepEqual(firstFile.stats, { added: 1, deleted: 0 });
+  assert.deepEqual(firstSnapshot.stats, { added: 1, deleted: 0 });
+  assert.deepEqual(firstChapter.stats, { added: 1, deleted: 0 });
+  assert.deepEqual(embedded.chapters[1].stats, { added: 1, deleted: 0 });
+  assert.deepEqual(embedded.total, { added: 2, deleted: 0 });
+});
+
+test('preserves file status, path, and fileCount per snapshot', () => {
+  const html = renderTour(tourData);
+  const embedded = extractTourData(html);
+  const snapshot = embedded.chapters[0].snapshots[0];
+  assert.equal(snapshot.fileCount, 1);
+  assert.equal(snapshot.files[0].path, 'src/client/App.tsx');
+  assert.equal(snapshot.files[0].status, 'modified');
+});
+
+test('renders correctly with a single chapter (fallback case) and a null icon when omitted', () => {
+  const html = renderTour(singleChapterTourData);
+  const embedded = extractTourData(html);
+  assert.equal(embedded.chapters.length, 1);
+  assert.equal(embedded.chapters[0].title, 'Everything');
+  assert.equal(embedded.chapters[0].icon, null);
+  assert.ok(html.includes('Fix typo in README'));
 });

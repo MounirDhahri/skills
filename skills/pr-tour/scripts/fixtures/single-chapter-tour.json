@@ -1,0 +1,25 @@
+{
+  "title": "Fix typo",
+  "prUrl": "https://github.com/example/repo/pull/1",
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "Everything",
+      "snapshots": [
+        {
+          "id": "s1",
+          "title": "Fix typo in README",
+          "prose": "Corrects a spelling mistake.",
+          "hunks": [
+            {
+              "path": "README.md",
+              "status": "modified",
+              "diffHeader": "diff --git a/README.md b/README.md\n--- a/README.md\n+++ b/README.md",
+              "diffText": "@@ -1,1 +1,1 @@\n-Helllo\n+Hello"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

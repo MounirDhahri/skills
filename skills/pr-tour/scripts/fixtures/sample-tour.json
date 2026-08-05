@@ -1,30 +1,44 @@
 {
   "title": "Add scroll position tracking",
   "prUrl": "https://github.com/artsy/metaphysics/pull/7623",
-  "snapshots": [
+  "chapters": [
     {
-      "id": "s1",
-      "title": "Track scroll behavior",
-      "prose": "Adds a scrollBehavior field to the diff scroll options and threads it through App.tsx.",
-      "hunks": [
+      "id": "c1",
+      "title": "Scroll tracking",
+      "icon": "🖱️",
+      "snapshots": [
         {
-          "path": "src/client/App.tsx",
-          "status": "modified",
-          "diffHeader": "diff --git a/src/client/App.tsx b/src/client/App.tsx\nindex abc123..def456 100644\n--- a/src/client/App.tsx\n+++ b/src/client/App.tsx",
-          "diffText": "@@ -308,6 +308,7 @@\n   diffScrollContainerRef,\n   setDiffData,\n });\n \n const toggleFileReviewed = useCallback("
+          "id": "s1",
+          "title": "Track scroll behavior",
+          "prose": "Adds a scrollBehavior field to the diff scroll options and threads it through App.tsx.",
+          "hunks": [
+            {
+              "path": "src/client/App.tsx",
+              "status": "modified",
+              "diffHeader": "diff --git a/src/client/App.tsx b/src/client/App.tsx\nindex abc123..def456 100644\n--- a/src/client/App.tsx\n+++ b/src/client/App.tsx",
+              "diffText": "@@ -308,6 +308,7 @@\n   diffScrollContainerRef,\n   setDiffData,\n });\n \n+const toggleFileReviewed = useCallback(() => {}, [])"
+            }
+          ]
         }
       ]
     },
     {
-      "id": "s2",
-      "title": "Settings defaults",
-      "prose": "Adds a default scrollAnimation setting alongside the existing appearance settings.",
-      "hunks": [
+      "id": "c2",
+      "title": "Settings",
+      "icon": "⚙️",
+      "snapshots": [
         {
-          "path": "src/client/components/SettingsModal.test.tsx",
-          "status": "modified",
-          "diffHeader": "diff --git a/src/client/components/SettingsModal.test.tsx b/src/client/components/SettingsModal.test.tsx\nindex 111..222 100644\n--- a/src/client/components/SettingsModal.test.tsx\n+++ b/src/client/components/SettingsModal.test.tsx",
-          "diffText": "@@ -25,6 +25,7 @@\n   syntaxTheme: 'vsDark',\n   editor: 'cursor' as const,\n   colorVision: 'normal' as const,\n+  scrollAnimation: 'auto' as const,"
+          "id": "s2",
+          "title": "Settings defaults",
+          "prose": "Adds a default scrollAnimation setting alongside the existing appearance settings.",
+          "hunks": [
+            {
+              "path": "src/client/components/SettingsModal.test.tsx",
+              "status": "modified",
+              "diffHeader": "diff --git a/src/client/components/SettingsModal.test.tsx b/src/client/components/SettingsModal.test.tsx\nindex 111..222 100644\n--- a/src/client/components/SettingsModal.test.tsx\n+++ b/src/client/components/SettingsModal.test.tsx",
+              "diffText": "@@ -25,6 +25,7 @@\n   syntaxTheme: 'vsDark',\n   editor: 'cursor' as const,\n   colorVision: 'normal' as const,\n+  scrollAnimation: 'auto' as const,"
+            }
+          ]
         }
       ]
     }
