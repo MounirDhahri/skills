@@ -1,6 +1,6 @@
 (function () {
   var data = window.__TOUR_DATA__;
-  var state = { index: 0, format: 'line-by-line', viewed: {} };
+  var state = { index: 0, format: 'line-by-line', viewed: {}, theme: 'dark' };
 
   var flat = [];
   data.chapters.forEach(function (chapter, chapterIndex) {
@@ -22,6 +22,9 @@
   var nextBtn = document.getElementById('next-btn');
   var lineBtn = document.getElementById('view-line');
   var sideBtn = document.getElementById('view-side');
+  var themeToggleBtn = document.getElementById('theme-toggle');
+  var hljsThemeDarkEl = document.getElementById('hljs-theme-dark');
+  var hljsThemeLightEl = document.getElementById('hljs-theme-light');
 
   function formatStats(stats) {
     var parts = [];
@@ -184,7 +187,7 @@
       drawFileList: false,
       matching: 'lines',
       outputFormat: state.format,
-      colorScheme: 'dark',
+      colorScheme: state.theme,
       highlight: true,
     });
     ui.draw();
@@ -236,6 +239,15 @@
     state.format = 'side-by-side';
     sideBtn.classList.add('active');
     lineBtn.classList.remove('active');
+    render();
+  });
+
+  themeToggleBtn.addEventListener('click', function () {
+    state.theme = state.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = state.theme;
+    hljsThemeDarkEl.disabled = state.theme !== 'dark';
+    hljsThemeLightEl.disabled = state.theme !== 'light';
+    themeToggleBtn.textContent = state.theme === 'dark' ? '🌙' : '☀️';
     render();
   });
 
