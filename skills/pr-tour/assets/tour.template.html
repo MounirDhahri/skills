@@ -14,9 +14,9 @@
   * { box-sizing: border-box; }
   body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0d1117; color: #e6edf3; }
   .layout { display: flex; flex-direction: column; height: 100vh; }
-  .phase-bar { display: flex; align-items: center; justify-content: center; padding: 14px 20px; border-bottom: 1px solid #30363d; background: #161b22; overflow-x: auto; }
+  .phase-bar { display: flex; align-items: center; justify-content: flex-start; padding: 14px 20px; border-bottom: 1px solid #30363d; background: #161b22; overflow-x: auto; }
   .phase-bar.hidden { display: none; }
-  .phase-step { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .phase-step { display: flex; align-items: center; gap: 8px; flex-shrink: 0; cursor: pointer; }
   .phase-step .dot { width: 26px; height: 26px; border-radius: 50%; background: #21262d; border: 1px solid #30363d; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #8b949e; }
   .phase-step.done .dot { background: #238636; border-color: #238636; color: #fff; }
   .phase-step.current .dot { background: #1f6feb; border-color: #1f6feb; color: #fff; }
@@ -61,6 +61,7 @@
   .file-card-header label { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #8b949e; white-space: nowrap; flex-shrink: 0; }
   .file-card-body { padding: 8px 12px; }
   .file-card-body .d2h-file-header { display: none; }
+  .file-card-body .d2h-file-wrapper { border: 0; margin-bottom: 0; }
   .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-top: 1px solid #30363d; background: #161b22; }
   .nav-bar button { background: #21262d; border: 1px solid #30363d; color: #e6edf3; padding: 6px 14px; border-radius: 6px; cursor: pointer; }
   .nav-bar button:disabled { opacity: 0.4; cursor: default; }

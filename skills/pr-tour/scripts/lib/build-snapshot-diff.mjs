@@ -6,6 +6,7 @@ export function groupHunksByFile(hunks) {
     if (!byPath.has(hunk.path)) {
       byPath.set(hunk.path, {
         path: hunk.path,
+        oldPath: hunk.oldPath ?? hunk.path,
         status: hunk.status,
         header: hunk.diffHeader,
         texts: [],
@@ -19,6 +20,7 @@ export function groupHunksByFile(hunks) {
     const entry = byPath.get(path);
     return {
       path: entry.path,
+      oldPath: entry.oldPath,
       status: entry.status,
       diffText: [entry.header, ...entry.texts].join('\n'),
     };

@@ -36,3 +36,13 @@ test('counts a bare hunk body with no file header at all', () => {
   const diffText = '@@ -1,1 +1,2 @@\n-old\n+new one\n+new two';
   assert.deepEqual(computeLineStats(diffText), { added: 2, deleted: 1 });
 });
+
+test('counts a deleted line that happens to start with "---" (e.g. a YAML separator) instead of skipping it as a file header', () => {
+  const diffText = '@@ -1,2 +1,1 @@\n----\n frontmatter';
+  assert.deepEqual(computeLineStats(diffText), { added: 0, deleted: 1 });
+});
+
+test('counts an added line that happens to start with "+++" (e.g. "+++i;") instead of skipping it as a file header', () => {
+  const diffText = '@@ -1,1 +1,2 @@\n counter\n+++i;';
+  assert.deepEqual(computeLineStats(diffText), { added: 1, deleted: 0 });
+});

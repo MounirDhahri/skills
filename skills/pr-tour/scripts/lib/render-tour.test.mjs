@@ -125,6 +125,79 @@ test('renderTour throws a clear error when called with no arguments', () => {
   assert.throws(() => renderTour({}), /tour data must contain at least one chapter/);
 });
 
+test('renderTour throws a clear error when a snapshot has an empty hunks array', () => {
+  assert.throws(
+    () =>
+      renderTour({
+        title: 'Empty snapshot',
+        prUrl: 'https://example.com/pr/1',
+        chapters: [
+          {
+            id: 'c1',
+            title: 'Chapter',
+            snapshots: [{ id: 's1', title: 'Empty', prose: 'no hunks', hunks: [] }],
+          },
+        ],
+      }),
+    /snapshot "s1" in chapter "c1" must contain at least one hunk/,
+  );
+});
+
+test('renderTour throws a clear error when a snapshot is missing hunks entirely', () => {
+  assert.throws(
+    () =>
+      renderTour({
+        title: 'Missing hunks key',
+        prUrl: 'https://example.com/pr/1',
+        chapters: [
+          {
+            id: 'c1',
+            title: 'Chapter',
+            snapshots: [{ id: 's1', title: 'No hunks key', prose: 'no hunks key' }],
+          },
+        ],
+      }),
+    /snapshot "s1" in chapter "c1" must contain at least one hunk/,
+  );
+});
+
+test('threads a renamed file\'s oldPath through to the embedded per-file data', () => {
+  const dataWithRename = {
+    title: 'Rename example',
+    prUrl: 'https://example.com/pr/1',
+    chapters: [
+      {
+        id: 'c1',
+        title: 'Renames',
+        snapshots: [
+          {
+            id: 's1',
+            title: 'Rename a file',
+            prose: 'Renames old.js to new.js with no content change.',
+            hunks: [
+              {
+                path: 'new.js',
+                oldPath: 'old.js',
+                status: 'renamed',
+                diffHeader:
+                  'diff --git a/old.js b/new.js\nsimilarity index 100%\nrename from old.js\nrename to new.js',
+                diffText: '',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
+  const html = renderTour(dataWithRename);
+  const embedded = extractTourData(html);
+  const file = embedded.chapters[0].snapshots[0].files[0];
+  assert.equal(file.path, 'new.js');
+  assert.equal(file.oldPath, 'old.js');
+  assert.equal(file.status, 'renamed');
+});
+
 test('preserves a title containing literal $-replacement patterns', () => {
   const dataWithDollarTitle = { ...tourData, title: "a$&b$`c" };
   const html = renderTour(dataWithDollarTitle);

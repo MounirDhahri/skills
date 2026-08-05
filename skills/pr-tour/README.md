@@ -37,7 +37,7 @@ node --test scripts/lib/*.test.mjs
 (`node --test scripts/lib/` fails — Node tries to resolve the directory
 itself as a CJS module — so glob the `.test.mjs` files explicitly.)
 
-## Scope (v1)
+## Scope
 
 - GitHub PR input only — no local git ref/branch-only input.
 - No publishing/hosting step — the skill writes a local `.html` file, no more.

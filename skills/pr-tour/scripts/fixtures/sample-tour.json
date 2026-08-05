@@ -14,6 +14,7 @@
           "hunks": [
             {
               "path": "src/client/App.tsx",
+              "oldPath": "src/client/App.tsx",
               "status": "modified",
               "diffHeader": "diff --git a/src/client/App.tsx b/src/client/App.tsx\nindex abc123..def456 100644\n--- a/src/client/App.tsx\n+++ b/src/client/App.tsx",
               "diffText": "@@ -308,6 +308,7 @@\n   diffScrollContainerRef,\n   setDiffData,\n });\n \n+const toggleFileReviewed = useCallback(() => {}, [])"
@@ -34,9 +35,24 @@
           "hunks": [
             {
               "path": "src/client/components/SettingsModal.test.tsx",
+              "oldPath": "src/client/components/SettingsModal.test.tsx",
               "status": "modified",
               "diffHeader": "diff --git a/src/client/components/SettingsModal.test.tsx b/src/client/components/SettingsModal.test.tsx\nindex 111..222 100644\n--- a/src/client/components/SettingsModal.test.tsx\n+++ b/src/client/components/SettingsModal.test.tsx",
               "diffText": "@@ -25,6 +25,7 @@\n   syntaxTheme: 'vsDark',\n   editor: 'cursor' as const,\n   colorVision: 'normal' as const,\n+  scrollAnimation: 'auto' as const,"
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Rename the settings hook file",
+          "prose": "Renames useSettings.ts to useAppSettings.ts for clarity, no content change.",
+          "hunks": [
+            {
+              "path": "src/client/hooks/useAppSettings.ts",
+              "oldPath": "src/client/hooks/useSettings.ts",
+              "status": "renamed",
+              "diffHeader": "diff --git a/src/client/hooks/useSettings.ts b/src/client/hooks/useAppSettings.ts\nsimilarity index 100%\nrename from src/client/hooks/useSettings.ts\nrename to src/client/hooks/useAppSettings.ts",
+              "diffText": ""
             }
           ]
         }

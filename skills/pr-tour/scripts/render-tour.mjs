@@ -33,6 +33,7 @@ function sumStats(statsList) {
 function buildFile(hunkFile) {
   return {
     path: hunkFile.path,
+    oldPath: hunkFile.oldPath,
     status: hunkFile.status,
     diffText: hunkFile.diffText,
     stats: computeLineStats(hunkFile.diffText),
@@ -69,6 +70,13 @@ export function renderTour(tourData) {
   for (const chapter of tourData.chapters) {
     if (!Array.isArray(chapter?.snapshots) || chapter.snapshots.length === 0) {
       throw new Error(`chapter "${chapter?.id ?? '(unknown)'}" must contain at least one snapshot`);
+    }
+    for (const snapshot of chapter.snapshots) {
+      if (!Array.isArray(snapshot?.hunks) || snapshot.hunks.length === 0) {
+        throw new Error(
+          `snapshot "${snapshot?.id ?? '(unknown)'}" in chapter "${chapter?.id ?? '(unknown)'}" must contain at least one hunk`,
+        );
+      }
     }
   }
 

@@ -30,6 +30,13 @@
     return parts.join(' ');
   }
 
+  function formatStatsPlain(stats) {
+    var parts = [];
+    if (stats.added) parts.push('+' + stats.added);
+    if (stats.deleted) parts.push('-' + stats.deleted);
+    return parts.join(' ');
+  }
+
   function buildPhaseBar() {
     if (!multiChapter) {
       phaseBarEl.classList.add('hidden');
@@ -45,6 +52,8 @@
       var step = document.createElement('div');
       step.className = 'phase-step';
       step.dataset.chapterIndex = String(i);
+      var statsText = formatStatsPlain(chapter.stats);
+      step.title = chapter.title + (statsText ? ' (' + statsText + ')' : '');
 
       var dot = document.createElement('div');
       dot.className = 'dot';
@@ -56,6 +65,13 @@
 
       step.appendChild(dot);
       step.appendChild(label);
+      step.addEventListener('click', function () {
+        var targetIndex = flat.findIndex(function (f) { return f.chapterIndex === i; });
+        if (targetIndex !== -1) {
+          state.index = targetIndex;
+          render();
+        }
+      });
       phaseBarEl.appendChild(step);
     });
   }
@@ -130,7 +146,9 @@
 
     var path = document.createElement('span');
     path.className = 'path';
-    path.textContent = file.path;
+    path.textContent = (file.status === 'renamed' && file.oldPath && file.oldPath !== file.path)
+      ? file.oldPath + ' → ' + file.path
+      : file.path;
 
     var badge = document.createElement('span');
     badge.className = 'status-badge ' + file.status;
@@ -222,6 +240,8 @@
   });
 
   document.addEventListener('keydown', function (e) {
+    var activeTag = document.activeElement && document.activeElement.tagName;
+    if (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT') return;
     if (e.key === 'ArrowLeft') go(-1);
     if (e.key === 'ArrowRight') go(1);
   });

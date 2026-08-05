@@ -1,14 +1,15 @@
 ---
 name: pr-tour
-description: Turn a GitHub pull request into a shareable, self-contained HTML "tour" — hunks grouped into narrative snapshots with descriptions, difit-style diff highlighting, and Prev/Next navigation. Use when the user wants to make a large or non-obvious PR easier to review, asks for a "PR tour", "guided walkthrough as HTML", "snapshot-by-snapshot review", or references a GitHub PR URL and wants it turned into a walkthrough document.
+description: Turn a GitHub pull request into a shareable, self-contained HTML "tour" — hunks grouped into narrative snapshots (optionally grouped further into themed chapters) with descriptions, difit-style diff highlighting, and Prev/Next navigation. Use when the user wants to make a large or non-obvious PR easier to review, asks for a "PR tour", "guided walkthrough as HTML", "snapshot-by-snapshot review", or references a GitHub PR URL and wants it turned into a walkthrough document.
 allowed-tools: Read Write Bash(gh:*) Bash(node:*) Bash(mkdir:*)
 ---
 
 # PR Tour
 
 Read a GitHub pull request, group its diff into narrative snapshots (not
-one-per-file, not one-per-hunk — group by review idea), write a short
-description for each, get the user's approval on the outline, then render
+one-per-file, not one-per-hunk — group by review idea), optionally grouped
+further into themed chapters for larger PRs, write a short description for
+each snapshot, get the user's approval on the outline, then render
 everything into one self-contained HTML file with `scripts/render-tour.mjs`.
 
 The rendered file has zero network dependencies (diff2html and highlight.js
@@ -125,6 +126,7 @@ Write this exact shape to a temp file outside the repo (e.g.
           "hunks": [
             {
               "path": "src/file.ts",
+              "oldPath": "<that file's oldPath from step 2, verbatim — same as path unless renamed>",
               "status": "modified",
               "diffHeader": "<that file's header from step 2, verbatim>",
               "diffText": "<one hunk's text from step 2, verbatim, including its @@ line>"
@@ -138,12 +140,14 @@ Write this exact shape to a temp file outside the repo (e.g.
 ```
 
 `icon` is optional — omit the key entirely if no emoji fits the chapter's
-theme. `diffHeader` and `diffText` must be copied verbatim from the parser
-output in step 2 — do not hand-edit diff content, only choose which hunks
-go in which snapshot, which snapshots go in which chapter, and write the
-prose around them. File status badges and added/removed line counts are
-computed automatically by the render script from `status` and `diffText`
-— do not compute or include them yourself.
+theme. `oldPath`, `diffHeader`, and `diffText` must be copied verbatim from
+the parser output in step 2 — do not hand-edit diff content, only choose
+which hunks go in which snapshot, which snapshots go in which chapter, and
+write the prose around them. File status badges and added/removed line
+counts are computed automatically by the render script from `status` and
+`diffText` — do not compute or include them yourself. `oldPath` is used to
+show `old/path.js → new/path.js` in the rendered file card header for
+renamed files — always include it, even when it's identical to `path`.
 
 ### 6. Render
 
@@ -177,11 +181,14 @@ explicitly out of scope for this skill.
   Before writing the file, walk the parser's output list and confirm every
   `path` appears in at least one snapshot's `hunks`. For a file with zero
   hunks, still add one entry for it to some snapshot with `diffText: ""`
-  and `diffHeader` set to that file's `header` from the parser output —
-  diff2html will still render the header/rename notice with no hunk body,
-  so the file shows up in the tour instead of silently vanishing.
-- Copy `diffHeader`/`diffText` verbatim from the parser output. Never
-  hand-write or edit diff content — only group and describe it.
+  and `diffHeader` set to that file's `header` from the parser output.
+  diff2html's own per-file header is hidden by this skill's CSS, but
+  pr-tour's own file-card header (path/oldPath, status badge, +N -M stats)
+  is built from `status`, `path`, and `oldPath` regardless of `diffText`
+  being empty, so the file still shows up in the tour instead of silently
+  vanishing.
+- Copy `oldPath`/`diffHeader`/`diffText` verbatim from the parser output.
+  Never hand-write or edit diff content — only group and describe it.
 - Local git refs without an associated PR are out of scope for v1 — if the
   user wants that, say so rather than improvising a workaround.
 - Do not add a publishing/hosting step, even if the Artifact tool is

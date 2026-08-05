@@ -39,6 +39,30 @@ test('single-file, single-hunk snapshot round-trips cleanly', () => {
   );
 });
 
+test('threads oldPath through for a renamed file', () => {
+  const hunks = [
+    {
+      path: 'renamed-new.js',
+      oldPath: 'renamed-old.js',
+      status: 'renamed',
+      diffHeader: 'diff --git a/renamed-old.js b/renamed-new.js',
+      diffText: '@@ -1,1 +1,1 @@\n-old\n+new',
+    },
+  ];
+  const files = groupHunksByFile(hunks);
+  assert.equal(files.length, 1);
+  assert.equal(files[0].path, 'renamed-new.js');
+  assert.equal(files[0].oldPath, 'renamed-old.js');
+});
+
+test('falls back to path as oldPath when oldPath is omitted (non-renamed file)', () => {
+  const hunks = [
+    { path: 'a.js', status: 'modified', diffHeader: 'diff --git a/a.js b/a.js', diffText: '@@ -1,1 +1,1 @@\n-old\n+new' },
+  ];
+  const files = groupHunksByFile(hunks);
+  assert.equal(files[0].oldPath, 'a.js');
+});
+
 test('a zero-hunk file (e.g. a pure rename) is represented via a single empty-diffText hunk entry', () => {
   // groupHunksByFile only groups what it's given. SKILL.md's coverage rule
   // handles zero-hunk files (pure renames, binary files) by having the
