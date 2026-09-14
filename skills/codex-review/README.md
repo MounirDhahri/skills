@@ -11,18 +11,20 @@ confirm, the ones it couldn't, and the ones it thinks are wrong.
 Codex is not a Claude subagent. It is a different vendor's model in its own
 process, with no access to your conversation. That is the point.
 
-```
-plan.md / spec.md
-  ↓
-prompt: context + the question set for that kind
-  ↓
-codex exec --sandbox read-only  <  review-prompt.md
-  ↓
-codex-verdict.md
-  ↓
-Claude checks each finding against the repo
-  ↓
-report: confirmed / wrong / unverified, ranked critical → optional
+```mermaid
+flowchart LR
+  A[plan.md<br/>spec.md] --> B{which kind?}
+  B -->|plan| Q1[how will this<br/>go wrong?]
+  B -->|spec| Q2[what does this<br/>fail to pin down?]
+  Q1 --> P[prompt file<br/>+ context Codex cannot see]
+  Q2 --> P
+  P --> C{herdr up?}
+  C -->|yes| D[named agent<br/>in a split pane]
+  C -->|no| E[codex exec<br/>--sandbox read-only]
+  D --> F[verdict.md]
+  E --> F
+  F --> G[check each finding<br/>against the repo]
+  G --> H[report:<br/>confirmed / wrong / unverified]
 ```
 
 ## Requirements
