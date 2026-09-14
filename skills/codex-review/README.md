@@ -34,6 +34,18 @@ report: confirmed / wrong / unverified, ranked critical → optional
   as a named agent in a split pane so you can watch it work. Without it, the
   same review runs headless.
 
+## What leaves your machine
+
+The prompt file goes to OpenAI. It holds the document under review plus the
+context Claude writes in: the goal, the limits you set, the options you ruled
+out, and sometimes code quoted from the plan.
+
+For an open-source repo that is nothing. For work code, check your employer's
+rules before installing this. The skill asks first when the context pulls in
+credentials, customer data, unreleased work, or anything you can't share
+outside the company, and it summarises rather than pastes where a summary
+does the job. Ask it to review a redacted document when that isn't enough.
+
 ## Installation
 
 Claude Code loads skills from a `SKILL.md` in a directory it scans: personal
