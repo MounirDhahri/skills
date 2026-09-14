@@ -1,18 +1,20 @@
 # Codex Review
 
-An independent second opinion on an implementation plan, from Codex rather
-than from Claude, before you write any code.
+An independent second opinion on an implementation plan or a spec, from Codex
+rather than from Claude, before you write any code.
 
-You write the plan (or Claude drafts it). This skill hands it to the `codex`
-CLI in a read-only sandbox. Codex reads the repo, critiques the plan against
-it, and Claude reports back with the findings it could confirm, the ones it
-couldn't, and the ones it thinks are wrong.
+You write the document (or Claude drafts it). This skill hands it to the
+`codex` CLI in a read-only sandbox. Codex reads the repo, critiques the
+document against it, and Claude reports back with the findings it could
+confirm, the ones it couldn't, and the ones it thinks are wrong.
 
 Codex is not a Claude subagent. It is a different vendor's model in its own
 process, with no access to your conversation. That is the point.
 
 ```
-plan.md
+plan.md / spec.md
+  ↓
+prompt: context + the question set for that kind
   ↓
 codex exec --sandbox read-only  <  review-prompt.md
   ↓
@@ -60,26 +62,35 @@ Restart Claude Code so it picks up the new skill.
 
 ```
 /codex-review .lavish/plan-auth-refactor.html
-/codex-review PLAN.md
-/codex-review            # the plan from this conversation
+/codex-review SPEC.md
+/codex-review            # the plan or spec from this conversation
 ```
 
-Or just ask: "get codex to review this plan", "what does codex think?",
-"red-team this before I start".
+Or just ask: "get codex to review this plan", "check this spec with codex",
+"what does codex think?", "red-team this before I start".
 
 Pairs with the `plan` skill in this repo. `/plan` writes the plan,
 `/codex-review` attacks it.
 
 ## Design notes
 
-Four rules carry the weight.
+**Plans and specs get different questions.** A plan says how to build
+something, so the reviewer is asked how it will go wrong: wrong assumptions
+about the codebase, what breaks, what's missing, what's over-built. A spec
+says what the thing must do and has no implementation route, so plan
+questions make the reviewer invent one and critique its own invention.
+Instead it's asked what the document fails to pin down: ambiguity two
+engineers would resolve differently, contradictions, untestable
+requirements, unstated assumptions, scope nobody asked for.
+
+Four rules carry the rest.
 
 **Write the context in.** `codex exec` starts blank and cannot see your
 conversation. The goal, the limits you set, and the options you already ruled
 out go in the prompt file, or Codex proposes what you turned down an hour ago.
 
 **The reviewer cannot write.** `--sandbox read-only` lets Codex read the repo
-to check the plan's claims about it, and do nothing else. No `--full-auto`, no
+to check the document's claims about it, and do nothing else. No `--full-auto`, no
 `--yolo`. In a Herdr pane that promise is weaker, because the agent kind owns
 the sandbox rather than a flag this skill passes, so the report names which
 runner ran.
@@ -97,7 +108,7 @@ verdict, which keeps two capable models from arguing about style.
 
 ## Scope
 
-- Plans and design docs. Not diffs, not PRs, not general questions.
+- Plans, specs, RFCs, design docs. Not diffs, not PRs, not general questions.
 - Invoked by hand. It never fires on its own after a plan.
-- Reports without acting. Revising the plan is a separate step you ask for.
+- Reports without acting. Revising the document is a separate step you ask for.
 - Two rounds at most. After that it is cheaper to decide.
