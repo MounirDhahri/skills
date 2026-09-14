@@ -28,6 +28,9 @@ report: confirmed / wrong / unverified, ranked critical → optional
 - [Claude Code](https://code.claude.com) — this is a Claude Code skill.
 - [Codex CLI](https://github.com/openai/codex) — `npm install -g @openai/codex`
   or `brew install codex`, then `codex login` (or set `OPENAI_API_KEY`).
+- Herdr *(optional)* — when `HERDR_ENV=1` and `herdr` is on PATH, the review
+  runs as a named agent in a split pane so you can watch it work. Without it,
+  the same review runs headless.
 
 ## Installation
 
@@ -78,7 +81,9 @@ confidently proposes the thing you rejected an hour ago.
 
 **The reviewer never gets write access.** `--sandbox read-only` lets Codex
 read the repo to check the plan's claims about it while guaranteeing it can't
-edit anything. No `--full-auto`, no `--yolo`.
+edit anything. No `--full-auto`, no `--yolo`. In the Herdr path that guarantee
+is weaker — a paned agent is sandboxed by its own configuration, not by a flag
+this skill passes — so the report says which of the two ran.
 
 **Its output is claims, not facts.** Every finding gets checked against the
 repo before Claude relays it — open the cited file, grep for the thing it says
